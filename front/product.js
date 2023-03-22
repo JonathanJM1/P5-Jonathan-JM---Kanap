@@ -44,12 +44,14 @@ const addToCart = document.getElementById("addToCart");
 
 // Ajouter le clic sur le bouton "Ajouter au panier"
 addToCart.addEventListener("click", () =>{
+
 // Ajouter le produit au panier
-const addProduct = {
-    quantity : document.getElementById("quantity").value,
-    color: document.getElementById("colors").value,
-    id : id
-}
+    const addProduct = {
+        quantity : document.getElementById("quantity").value,
+        color: document.getElementById("colors").value,
+        id : id
+    }
+
 // Vérifier si une couleur a été sélectionnée avec une alerte
     const color = document.getElementById("colors").value
     if (color === "") {
@@ -59,25 +61,35 @@ const addProduct = {
 
 // Vérifier si une quantité a été saisie avec une alerte
     const quantity = document.getElementById("quantity").value
-    if (quantity === "" || quantity < 1) {
-        alert("Veuillez saisir une quantité valide")
+    if (quantity <= 0 || quantity > 100) {
+        alert("Veuillez saisir une quantité comprise entre 1 et 100")
         return
     }
-// Créer un tableau pour stocker les produits ajoutés au panier
-let addLocalStorage = []
+// Récupérer les produits existants dans le panier
+const addLocalStorage = JSON.parse(localStorage.getItem("addToCart")) || [];
 
-// Vérifier si des produits ont déjà été ajoutés au panier
-if(localStorage.getItem("addToCart") !== null){
-// Si oui, récupérer les produits existants
-    addLocalStorage = JSON.parse(localStorage.getItem("addToCart"))
-// Ajouter le nouveau produit au tableau
-    addLocalStorage.push(addToCart)
-// Enregistrer le tableau dans le stockage local
-    localStorage.setItem("addToCart", JSON.stringify(addLocalStorage))
+// Trouver le produit existant dans le panier (s'il y en a un)
+const existingProduct = addLocalStorage.findIndex(item => item.id === addProduct.id && item.color === addProduct.color);
+
+// Ajouter le nouveau produit ou augmenter la quantité du produit existant
+if (existingProduct !== -1) {
+    const newQuantity = parseInt(addLocalStorage[existingProduct].quantity) + parseInt(addProduct.quantity);
+    if (newQuantity > 100) {
+        alert("La quantité totale ne doit pas dépasser 100");
+        return;
+    }
+    addLocalStorage[existingProduct].quantity = newQuantity;
 } else {
-    addLocalStorage.push(addProduct)
-    localStorage.setItem("addToCart", JSON.stringify(addLocalStorage))
+    if (addProduct.quantity > 100) {
+        alert("La quantité totale ne doit pas dépasser 100");
+        return;
+    }
+    addLocalStorage.push(addProduct);
 }
+
+// Enregistrer le tableau dans le stockage local
+localStorage.setItem("addToCart", JSON.stringify(addLocalStorage));
+
 // Alerte pour indiquer que le produit a été ajouté au panier
-    alert("Le produit a été ajouté au panier")
+alert("Le produit a été ajouté au panier");
 })
