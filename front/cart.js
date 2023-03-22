@@ -1,38 +1,85 @@
-// Récupérer le contenu du panier depuis le localStorage
-const cart = JSON.parse(localStorage.getItem("addToCart"));
+// Récupérer les produits ajoutés au panier dans le stockage local
+const productsInCart = JSON.parse(localStorage.getItem("addToCart")) || [];
 
-// Vérifier si le panier n'est pas vide
-if (cart.length > 0 ) {
-// Parcourir les produits dans le panier
-for (product of cart) {
-// Afficher chaque produit dans le panier
-showCart(product);
-}
+// Sélectionner l'élément du DOM où afficher les produits du panier
+const cartItemsContainer = document.getElementById("cart__items");
+
+// Fonction pour afficher les produits dans le panier
+function displayCartProducts(products) {
+  // Réinitialiser l'affichage du panier
+  //cartItemsContainer.innerHTML = "";
+
+  // Afficher chaque produit ajouté au panier
+  products.forEach(product => {
+    const { id, color, quantity } = product;
+    const productUrl = `http://localhost:3000/api/products/${id}`;
+
+    // Appeler l'API pour récupérer les informations détaillées du produit
+    fetch(productUrl)
+      .then(res => res.json())
+      .then(data => {
+        // Créer la structure HTML pour afficher le produit dans le panier
+        const cartProduct = document.createElement("article");
+        cartProduct.classList.add("cart__item");
+        cartProduct.dataset.productId = id;
+        cartProduct.dataset.productColor = color;
+        cartItemsContainer.appendChild(cartProduct);
+
+        const cartProductImgContainer = document.createElement("div");
+        cartProductImgContainer.classList.add("cart__item__img");
+        cartProduct.appendChild(cartProductImgContainer);
+
+        const cartProductImg = document.createElement("img");
+        cartProductImg.src = data.imageUrl;
+        cartProductImg.alt = data.altTxt;
+        cartProductImgContainer.appendChild(cartProductImg);
+
+        const cartProductContent = document.createElement("div");
+        cartProductContent.classList.add("cart__item__content");
+        cartProduct.appendChild(cartProductContent);
+
+        const cartProductTitle = document.createElement("h2");
+        cartProductTitle.classList.add("cart__item__title");
+        cartProductTitle.textContent = data.name;
+        cartProductContent.appendChild(cartProductTitle);
+
+        const cartProductColor = document.createElement("p");
+        cartProductColor.classList.add("cart__item__color");
+        cartProductColor.textContent = `Couleur : ${color}`;
+        cartProductContent.appendChild(cartProductColor);
+
+        const cartProductQty = document.createElement("p");
+        cartProductQty.classList.add("cart__item__quantity");
+        cartProductQty.textContent = `Quantité : ${quantity}`;
+        cartProductContent.appendChild(cartProductQty);
+
+        const cartProductPrice = document.createElement("p");
+        cartProductPrice.classList.add("cart__item__price");
+        cartProductPrice.textContent = `${data.price} €`;
+        cartProductContent.appendChild(cartProductPrice);
+
+        const cartProductQtyInput = document.createElement("input");
+        cartProductQtyInput.classList.add("cart__item__quantity-input");
+        cartProductQtyInput.setAttribute("type", "number");
+        cartProductContent.appendChild(cartProductQtyInput);
+
+        const cartProductDelete = document.createElement("button");
+        cartProductDelete.classList.add("cart__item__delete");
+        cartProductDelete.textContent = "Supprimer";
+        cartProductContent.appendChild(cartProductDelete);
+        
+        // Ajouter un gestionnaire d'événements pour supprimer le produit du panier
+        cartProductDelete.addEventListener("click", () => {
+          const index = products.findIndex(p => p.id === id && p.color === color);
+          if (index !== -1) {
+            products.splice(index, 1);
+            localStorage.setItem("addToCart", JSON.stringify(products));
+            displayCartProducts(products);
+          }
+        });
+      });
+  });
 }
 
-function showCart(product) {
-// Sélectionner la section avec les articles
-const productCart = document.getElementById("cart__items");
-// Créer un élément article pour chaque produit dans le panier avec le Html
-productCart.innerHTML +=  ` <article class="cart__item" data-id="${data [product]._id}">
-    <div class="cart__item__img">
-    <img src="${data [product].imageUrl}" alt="${data [product].altTxt}">
-    </div>
-    <div class="cart__item__content">
-      <div class="cart__item__content__description">
-        <h2>${data [product].name}</h2>
-        <p>Vert</p>
-        <p>${data [product].price}</p>
-      </div>
-      <div class="cart__item__content__settings">
-        <div class="cart__item__content__settings__quantity">
-          <p>Qté : </p>
-          <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="42">
-        </div>
-        <div class="cart__item__content__settings__delete">
-          <p class="deleteItem">Supprimer</p>
-        </div>
-      </div>
-    </div>
-  </article`
-}
+// Appeler la fonction pour afficher les produits dans le panier
+displayCartProducts(productsInCart);
