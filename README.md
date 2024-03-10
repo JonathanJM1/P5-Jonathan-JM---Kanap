@@ -19,3 +19,5 @@ Le serveur doit fonctionner avec le port par défaut. Si le serveur s’exécute
 -   [x] Gérer **les événements JavaScript**
 -   [x] Interagir avec **un service web (API)** avec JavaScript
 -   [x] **Valider les données** provenant de sources externes
+
+<img src="./mobile.png" alt="Gif mobile">
